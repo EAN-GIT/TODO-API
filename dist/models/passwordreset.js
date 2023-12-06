@@ -8,7 +8,7 @@ const passwordResetSchema = new mongoose_1.Schema({
         ref: "User",
     },
     resetToken: {
-        type: String,
+        type: Number,
         required: true,
     },
     expiresIn: {

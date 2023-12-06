@@ -14,7 +14,7 @@ const passwordResetSchema = new Schema(
       ref: "User",
     },
     resetToken: {
-      type: String,
+      type: Number,
       required: true,
     },
     expiresIn: {

@@ -7,16 +7,14 @@ import ErrorHandler from "./middleware/error.middleware";
 import connectDatabase from "./config/db-config";
 import dotenv from "dotenv"
 
-dotenv.config()
-// console.log(process.env)
+dotenv.config();
 
 
 const app: express.Application= express();
 
 app.use(express.json())
 
-console.log(new Date())
-console.log(Date.now())
+
 app.use("/api/v1",router)
 
 

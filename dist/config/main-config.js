@@ -25,7 +25,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
-console.log(process.env);
 const config = {
     server: {
         port: process.env.PORT,
@@ -33,6 +32,9 @@ const config = {
     },
     database: {
         dbUrl: process.env.DB_URL || 'mongodb://localhost:27017/todo-api-ts'
+    },
+    jwtServices: {
+        jwt_secret: process.env.JWT_SECRET
     }
 };
 exports.default = config;

@@ -11,11 +11,8 @@ const error_middleware_1 = __importDefault(require("./middleware/error.middlewar
 const db_config_1 = __importDefault(require("./config/db-config"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-// console.log(process.env)
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
-console.log(new Date());
-console.log(Date.now());
 app.use("/api/v1", routes_1.default);
 ///connect t o database
 (0, db_config_1.default)();

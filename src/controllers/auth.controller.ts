@@ -1,10 +1,13 @@
 import { RequestHandler } from "express";
 import User from "../models/user.model";
+import argon2 from "argon2";
 import mongoose from "mongoose";
 import { CustomError } from "../helpers/error.helper";
 import { jwtsign } from "../services/jwt.services";
 import passResetToken from "../helpers/pass.reset.token";
 import passReset from "../models/passwordreset";
+
+
 
 export const register: RequestHandler = async (req, res, next) => {
   try {
@@ -18,12 +21,12 @@ export const register: RequestHandler = async (req, res, next) => {
     }
 
     ///proceed to hash password
+   const hashedPassword = await argon2.hash(password);
 
-    const hashPassword = "";
     //go ahead and register the new user
-    const newUser = await User.create({ email, username, hashPassword });
+    const newUser = await User.create({ email, username,password : hashedPassword });
 
-    await newUser.save();
+    /*await newUser.save();*/
 
     res.status(201).json({
       success: true,
@@ -40,23 +43,32 @@ export const login: RequestHandler = async (req, res, next) => {
 
     // chk if user by that mail exists
     const existingUser = await User.findOne({ email });
+    console.log(existingUser);
 
-    if (!existingUser || "verifypassword") {
-      throw new CustomError("invalid credetials", 401);
+    // verify password and chk if user exists
+
+    if (
+      !existingUser ||
+      !(await argon2.verify(existingUser.password, password))
+    ) {
+      throw new CustomError("invalid credentials", 401);
     }
 
     // give the user a a login  token
-    const token = jwtsign({ userId: existingUser.id, role: existingUser.role });
+    const token = jwtsign({ userId: existingUser.id });
+    console.log(token);
 
-    // res.status(200).json({
-    //     success:true,
-    //     message:"a reset token has been sent o your email",
-    //     data:token
-    // })
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token: token,
+    });
   } catch (err) {
     next(err);
   }
 };
+
+
 
 export const forgotPassword: RequestHandler = async (req, res, next) => {
   const { email } = req.body;
@@ -71,78 +83,74 @@ export const forgotPassword: RequestHandler = async (req, res, next) => {
   //  generate a token for the user//
   const resetToken = passResetToken();
 
-
   //hash the token
-
-
+//   const resetTokenHash = await argon2.hash(resetToken);
 
   //send to user via mail
 
-
-
   //save a record in db
 
-  const  resetRecord = passReset.create({
-    user:user,
-    resetToken:resetToken,
-
-
+  const resetRecord =  await passReset.create({
+    user: user,
+    resetToken: resetToken,
   });
 
   res.status(200).json({
     success: true,
-    message: "a reset token has been sent o your email",
+    message: "A reset token has been sent o your email",
     data: resetRecord,
+    resetToken:resetToken
   });
 };
 
 export const resetPassword: RequestHandler = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const { newpassword } = req.body;
+console.log(token)
+    // const hashtokenInput = await argon2.hash(token.trim())
 
-    try {
-        const {resetToken} = req.params;
-        const {newpassword}=req.body
+    // console.log(hashtokenInput)
+    //check if owner of cuh token exist and token isnt expired
+    const passResetDoc = await passReset
+      .findOne({
+        resetToken: token,
+        expiresIn: { $gt: Date.now() },
+      })
+      .populate("user");
 
-        //check if owner of cuh token exist and token isnt expired
-        const passResetDoc = await passReset.findOne({
-            resetToken:resetToken,
-            expiresIn :{$gt: Date.now}
-        }).populate("user")
-
-        if(!passResetDoc){throw new CustomError("invalid or expired token",401)}
-
-
-        // else...create update user password
-
-        const { user } = passResetDoc;
-
-        // Check if user information is available
-        if (!user || !user._id) {
-          throw new CustomError('User information not available', 401);
-        }
-    
-        // Hash the new password using argon2
-        // const hashedPassword = await argon2.hash(newpassword);
-    
-        // Update user's password
-        
-        const updatedUser = await User.findByIdAndUpdate(
-          user._id,
-        //   { password: hashedPassword },
-          { new: true }
-        );
-        // Send reset success email
-       
-        // Respond with success message and updated user data
-        res.status(201).json({
-          message: 'Password reset successful',
-          data: updatedUser,
-        }); 
-
-
-
-    } catch (err) {
-        
+    if (!passResetDoc) {
+      throw new CustomError("invalid or expired token", 401);
     }
+
+    //get user details from the passresetrecord
+    const { user } = passResetDoc;
+
+    // Check if user information is available
+    if (!user || !user._id) {
+      throw new CustomError("User information not available", 401);
+    }
+
+    // Hash the new password using argon2
+    const hashedPassword = await argon2.hash(newpassword);
+
+    // Update user's password
+
+    const updatedUser = await User.findByIdAndUpdate(
+      user._id,
+      { password: hashedPassword },
+      { new: true }
+    );
+    // Send reset success email
+
+    // Respond with success message and updated user data
+    res.status(201).json({
+      message: "Password reset successful",
+      data: updatedUser,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const logout: RequestHandler = async (req, res, next) => {};

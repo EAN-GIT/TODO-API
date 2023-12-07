@@ -10,7 +10,9 @@ const jwtsign = (body) => {
     if (!main_config_1.default.jwtServices.jwt_secret) {
         throw new Error("JWT secret is not defined in the configuration.");
     }
-    const token = jsonwebtoken_1.default.sign(body, main_config_1.default.jwtServices.jwt_secret, { expiresIn: "54h" });
+    const token = jsonwebtoken_1.default.sign(body, main_config_1.default.jwtServices.jwt_secret, {
+        expiresIn: "54h",
+    });
     return token;
 };
 exports.jwtsign = jwtsign;

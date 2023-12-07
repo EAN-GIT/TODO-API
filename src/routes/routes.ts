@@ -1,23 +1,25 @@
 import { Router, RequestHandler } from "express";
 import { createTodo ,deleteTodo,getTodo, getTodos, updateTodo} from "../controllers/todo.controller";
+import { forgotPassword, login, logout, register, resetPassword } from "../controllers/auth.controller";
+import { authMiddleware } from "../middleware/auth.middleware";
 
 const router = Router();
 
 // auth routes
-router.post("/auth/register");
-router.post("/auth/login");
-router.post("/auth/forgot-password");
-router.post("/auth/reset-password/:token");
-router.post("/auth/logout");
+router.post("/auth/register", register);
+router.post("/auth/login",login);
+router.post("/auth/forgot-password",forgotPassword);
+router.post("/auth/reset-password/:token",resetPassword);
+router.post("/auth/logout",logout);
 
 
 
 // TODO ROUTES
-router.get("/todos/:userId",getTodos);
-router.get("/todo/:id",getTodo);
-router.post("/todo",createTodo);
-router.put("/todo/:id",updateTodo);
-router.delete("/todo/:id",deleteTodo);
+router.get("/todos/:userId",authMiddleware,getTodos);
+router.get("/todo/:id",authMiddleware,getTodo);
+router.post("/todo",authMiddleware,createTodo);
+router.put("/todo/:id",authMiddleware,updateTodo);
+router.delete("/todo/:id",authMiddleware,deleteTodo);
 
 
 

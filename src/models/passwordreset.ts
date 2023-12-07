@@ -1,25 +1,25 @@
-import { Schema, ObjectId, Document, model, Types } from "mongoose";
+import mongoose, { Schema, ObjectId, Document, model, Types } from "mongoose";
 
 interface pReset extends Document {
-  user: Types.ObjectId;
+  user: mongoose.Types.ObjectId;
   expiresIn: Date;
   resetToken: string;
 }
 
-const passwordResetSchema = new Schema(
+const passwordResetSchema = new Schema<pReset>(
   {
     user: {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       required: true,
       ref: "User",
     },
     resetToken: {
-      type: Number,
+      type: String,
       required: true,
     },
     expiresIn: {
       type: Date,
-      default: new Date(Date.now() + 30 + 60 + 1000),
+      default:  new Date(Date.now() + 60 * 60 * 1000),
 
     },
   },

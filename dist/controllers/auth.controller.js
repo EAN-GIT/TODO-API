@@ -36,6 +36,7 @@ exports.register = register;
 const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
+        console.log("iiiii");
         // chk if user by that mail exists
         const existingUser = await user_model_1.default.findOne({ email });
         console.log(existingUser);
@@ -45,7 +46,7 @@ const login = async (req, res, next) => {
             throw new error_helper_1.CustomError("invalid credentials", 401);
         }
         // give the user a a login  token
-        const token = (0, jwt_services_1.jwtsign)({ userId: existingUser.id });
+        const token = (0, jwt_services_1.jwtSign)({ userId: existingUser.id });
         console.log(token);
         res.status(200).json({
             success: true,

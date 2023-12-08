@@ -3,7 +3,7 @@ import User from "../models/user.model";
 import argon2 from "argon2";
 import mongoose from "mongoose";
 import { CustomError } from "../helpers/error.helper";
-import { jwtsign } from "../services/jwt.services";
+import { jwtSign } from "../services/jwt.services";
 import passResetToken from "../helpers/pass.reset.token";
 import passReset from "../models/passwordreset";
 
@@ -40,7 +40,7 @@ export const register: RequestHandler = async (req, res, next) => {
 export const login: RequestHandler = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
+    console.log("iiiii")
     // chk if user by that mail exists
     const existingUser = await User.findOne({ email });
     console.log(existingUser);
@@ -55,7 +55,7 @@ export const login: RequestHandler = async (req, res, next) => {
     }
 
     // give the user a a login  token
-    const token = jwtsign({ userId: existingUser.id });
+    const token = jwtSign({ userId: existingUser.id });
     console.log(token);
 
     res.status(200).json({

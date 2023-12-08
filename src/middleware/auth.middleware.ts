@@ -3,6 +3,7 @@ import { CustomError } from "../helpers/error.helper";
 import config from "../config/main-config";
 import jwt from "jsonwebtoken"
 import { IncomingHttpHeaders } from 'http'; // Import IncomingHttpHeaders
+import { jwtSign } from "../services/jwt.services";
 
  
 // Extend Request type to include a user property
@@ -18,27 +19,31 @@ interface CustomRequest extends Request {
       
     
     try{
-        const token = req.headers.authorization?.split(" ")[1];
-
+      const authHeader = req.headers.authorization;
+      
+      const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined;
+        console.log
+        (token)
+        
         if(!token ) {throw new CustomError("Unauthorised:You have to be logged in",403)}
 
         const jwtSecret = config.jwtServices.jwt_secret;
-
+      console.log(jwtSecret)
         if (jwtSecret === undefined) {
           throw new CustomError("JWT secret is not defined in the configuration.", 500);
         }
-    
-        const decoded =  jwt.verify(token, jwtSecret );
+        
+        const decoded = jwt.verify(token, jwtSecret);
+        console.log("rrfff")
 
         if(!decoded){throw new CustomError("invalid  or expired token",403)}
-        console.log(decoded)
         // assiggn user to the request obj
         req.user = decoded;
 
         next()
 
     }catch(err){
-
+      console.error(err);
 next(err)
 
     }
